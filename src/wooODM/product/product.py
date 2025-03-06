@@ -2,8 +2,10 @@ from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 
-from product.category import Category
-from product.tag import ProductTag  # Correct import for datetime
+from .category import Category
+from .tag import ProductTag
+from wooODM.core import WooCommerce
+from .image import Image  # Correct import for datetime
 
 class Product(BaseModel):
     """
@@ -11,7 +13,7 @@ class Product(BaseModel):
     """
     id: Optional[int] = None  # Unique identifier for the resource (read-only)
     name: str  # Product name
-    slug: str  # Product slug
+    slug: Optional[str]  # Product slug
     permalink: Optional[str] = None  # Product URL (read-only)
     date_created: Optional[datetime] = None  # Date product created (site's timezone)
     date_created_gmt: Optional[datetime] = None  # Date product created (GMT)
@@ -67,7 +69,7 @@ class Product(BaseModel):
     purchase_note: Optional[str] = None  # Optional note after purchase
     categories: List[Category] = Field(default=[])  # List of categories
     tags: List[ProductTag] = Field(default=[])  # List of tags
-    images: List[Dict[str, Any]] = Field(default=[])  # List of images
+    images: List[Image] = Field(default=[])  # List of images
     attributes: List[Dict[str, Any]] = Field(default=[])  # List of attributes
     default_attributes: List[Dict[str, Any]] = Field(default=[])  # Default variation attributes
     variations: List[int] = Field(default=[])  # List of variation IDs (read-only)
@@ -81,12 +83,26 @@ class Product(BaseModel):
         Fetch all products with pagination and return a list of Product objects.
         """
         wcapi = WooCommerce.get_instance()
-        response = wcapi.get(f"products?per_page={per_page}&page={page}").json()
+        # response = wcapi.get(f"products?per_page={per_page}&page={page}")
+        response = wcapi.get("products")
+
+        if response.status_code == 200:
+            return [cls.model_validate(product) for product in response.json()]
         
-        if response:
-            return [cls.model_validate(product) for product in response]
+        raise Exception(response.json().get("message", "Unknown error"))
+    
+    @classmethod
+    def get(cls, product_id: int):
+        """
+        Retrieve a product from WooCommerce by ID and return a Product object.
+        """
+        wcapi = WooCommerce.get_instance()
+        response = wcapi.get(f"products/{product_id}")
         
-        return []  # If no products are found, return an empty list
+        if response.status_code == 200:
+            return cls.model_validate(response.json())
+        
+        raise Exception(response.json().get("message", "Unknown error"))
 
     def save(self):
         """

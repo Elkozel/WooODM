@@ -14,6 +14,19 @@ class ProductTag(BaseModel):
  
     def __repr__(self):
         return f"ProductTag(id={self.id}, name={self.name}, slug={self.slug}, product_count={self.count})"
+
+    @classmethod
+    def all(cls, per_page: int = 10, page: int = 1):
+        """
+        Fetch all tags with pagination and return a list of ProductTag objects.
+        """
+        wcapi = WooCommerce.get_instance()
+        response = wcapi.get(f"products/tags")
+
+        if response.status_code == 200:
+            return [cls.model_validate(product) for product in response.json()]
+        
+        raise Exception(response.json().get("message", "Unknown error"))
     
     @classmethod
     def get(cls, tag_id: int):
