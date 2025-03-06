@@ -78,7 +78,7 @@ class Category(BaseModel):
             raise Exception("Category has no ID. Cannot delete.")
         
         wcapi = WooCommerce.get_instance()
-        response = wcapi.delete(f"products/categories/{self.id}")
+        response = wcapi.delete(f"products/categories/{self.id}", params={"force": True}) # Force is required, as the source does not support trashing
         return response.json()
 
     def __repr__(self):

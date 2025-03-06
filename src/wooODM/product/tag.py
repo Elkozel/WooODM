@@ -70,7 +70,7 @@ class ProductTag(BaseModel):
             raise Exception("Tag has no ID. Cannot delete.")
 
         wcapi = WooCommerce.get_instance()
-        response = wcapi.delete(f"products/tags/{self.id}")
+        response = wcapi.delete(f"products/tags/{self.id}", params={"force": True}) # Force is required, as the source does not support trashing
 
         if response.status_code == 200:
             return response.json()  # Successfully deleted
