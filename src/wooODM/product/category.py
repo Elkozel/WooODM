@@ -9,7 +9,7 @@ class Category(BaseModel):
     """
     id: Optional[int] = None  # Unique identifier for the category (read-only)
     name: str  # Category name (mandatory)
-    slug: Optional[str] = None  # Alphanumeric identifier for the category (optional)
+    slug: str  # Alphanumeric identifier for the category
     parent: Optional[int] = 0  # Parent ID of the category, 0 means no parent (optional)
     description: Optional[str] = None  # HTML description of the category (optional)
     display: str = "default"  # Category archive display type, default is 'default'
@@ -46,8 +46,12 @@ class Category(BaseModel):
         Fetch all categories with pagination and return a list of Category objects.
         """
         wcapi = WooCommerce.get_instance()
-        response = wcapi.get(f"products/categories?per_page={per_page}&page={page}").json()
-        return [cls.model_validate(cat) for cat in response]
+        response = wcapi.get(f"products/categories")
+
+        if response.status_code == 200:
+            return [cls.model_validate(product) for product in response.json()]
+        
+        raise Exception(response.json().get("message", "Unknown error"))
 
     def save(self):
         """
@@ -57,6 +61,7 @@ class Category(BaseModel):
         data = self.model_dump()
         response = wcapi.put(f"products/categories/{self.id}", data) if self.id else wcapi.post("products/categories", data)
         
+        print(response.json())
         if response.status_code in [200, 201]:
             updated_category = self.model_validate(response.json())
             for field, value in updated_category.model_dump().items():
