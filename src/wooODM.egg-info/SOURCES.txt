@@ -1,0 +1,12 @@
+README.md
+pyproject.toml
+src/wooODM/__init__.py
+src/wooODM/category.py
+src/wooODM/core.py
+src/wooODM/product.py
+src/wooODM/tag.py
+src/wooODM.egg-info/PKG-INFO
+src/wooODM.egg-info/SOURCES.txt
+src/wooODM.egg-info/dependency_links.txt
+src/wooODM.egg-info/requires.txt
+src/wooODM.egg-info/top_level.txt

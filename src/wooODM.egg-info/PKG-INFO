@@ -1,0 +1,8 @@
+Metadata-Version: 2.2
+Name: wooODM
+Version: 0.1
+Summary: A WooCommerce ODM wrapper for Python
+Author-email: Tsvetomir Hristov <caci802@gmail.com>
+Description-Content-Type: text/markdown
+Requires-Dist: WooCommerce
+Requires-Dist: pydantic
