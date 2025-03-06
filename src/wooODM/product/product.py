@@ -1,6 +1,9 @@
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
-from datetime import datetime  # Correct import for datetime
+from datetime import datetime
+
+from product.category import Category
+from product.tag import ProductTag  # Correct import for datetime
 
 class Product(BaseModel):
     """
@@ -62,8 +65,8 @@ class Product(BaseModel):
     cross_sell_ids: List[int] = Field(default=[])  # List of cross-sell product IDs
     parent_id: Optional[int] = None  # Product parent ID
     purchase_note: Optional[str] = None  # Optional note after purchase
-    categories: List[Dict[str, Any]] = Field(default=[])  # List of categories
-    tags: List[Dict[str, Any]] = Field(default=[])  # List of tags
+    categories: List[Category] = Field(default=[])  # List of categories
+    tags: List[ProductTag] = Field(default=[])  # List of tags
     images: List[Dict[str, Any]] = Field(default=[])  # List of images
     attributes: List[Dict[str, Any]] = Field(default=[])  # List of attributes
     default_attributes: List[Dict[str, Any]] = Field(default=[])  # Default variation attributes
