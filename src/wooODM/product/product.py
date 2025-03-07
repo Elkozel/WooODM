@@ -4,10 +4,10 @@ from datetime import datetime
 
 from .category import Category
 from .tag import ProductTag
-from wooODM.core import WooCommerce
+from wooODM.core import WooBasicODM, WooCommerce
 from .image import Image  # Correct import for datetime
 
-class Product(BaseModel):
+class Product(WooBasicODM):
     """
     Represents a WooCommerce product using Pydantic for validation & deserialization.
     """
@@ -21,7 +21,7 @@ class Product(BaseModel):
     date_modified_gmt: Optional[datetime] = None  # Date product last modified (GMT)
     type: str = "simple"  # Product type (default is 'simple')
     status: str = "publish"  # Product status (default is 'publish')
-    featured: bool = False  # Featured product (default is False)
+    featured: bool = None  # Featured product (default is False)
     catalog_visibility: str = "visible"  # Catalog visibility (default is 'visible')
     description: Optional[str] = None  # Product description
     short_description: Optional[str] = None  # Product short description
@@ -37,8 +37,8 @@ class Product(BaseModel):
     on_sale: Optional[bool] = None  # If the product is on sale (read-only)
     purchasable: Optional[bool] = None  # If the product can be purchased (read-only)
     total_sales: Optional[int] = None  # Amount of sales (read-only)
-    virtual: bool = False  # Whether the product is virtual (default is False)
-    downloadable: bool = False  # Whether the product is downloadable (default is False)
+    virtual: bool = None  # Whether the product is virtual (default is False)
+    downloadable: bool = None  # Whether the product is downloadable (default is False)
     downloads: List[Dict[str, Any]] = Field(default=[])  # List of downloadable files
     download_limit: int = -1  # Number of times downloadable files can be downloaded (default is -1)
     download_expiry: int = -1  # Number of days until access to downloadable files expires (default is -1)
@@ -46,13 +46,13 @@ class Product(BaseModel):
     button_text: Optional[str] = None  # Product external button text (for external products)
     tax_status: str = "taxable"  # Tax status (default is 'taxable')
     tax_class: Optional[str] = None  # Tax class
-    manage_stock: bool = False  # If stock is managed at the product level (default is False)
+    manage_stock: bool = None  # If stock is managed at the product level (default is False)
     stock_quantity: Optional[int] = None  # Stock quantity
     stock_status: str = "instock"  # Stock status (default is 'instock')
     backorders: str = "no"  # If backorders are allowed (default is 'no')
     backorders_allowed: Optional[bool] = None  # If backorders are allowed (read-only)
     backordered: Optional[bool] = None  # If the product is backordered (read-only)
-    sold_individually: bool = False  # Allow one item per order (default is False)
+    sold_individually: bool = None  # Allow one item per order (default is False)
     weight: Optional[str] = None  # Product weight
     dimensions: Optional[Dict[str, Any]] = None  # Product dimensions
     shipping_required: Optional[bool] = None  # Whether the product requires shipping (read-only)
@@ -77,59 +77,22 @@ class Product(BaseModel):
     menu_order: int = 0  # Menu order for sorting products
     meta_data: List[Dict[str, Any]] = Field(default=[])  # List of meta data
 
-    @classmethod
-    def all(cls, per_page: int = 10, page: int = 1):
-        """
-        Fetch all products with pagination and return a list of Product objects.
-        """
-        wcapi = WooCommerce.get_instance()
-        # response = wcapi.get(f"products?per_page={per_page}&page={page}")
-        response = wcapi.get("products")
-
-        if response.status_code == 200:
-            return [cls.model_validate(product) for product in response.json()]
-        
-        raise Exception(response.json().get("message", "Unknown error"))
-    
-    @classmethod
-    def get(cls, product_id: int):
-        """
-        Retrieve a product from WooCommerce by ID and return a Product object.
-        """
-        wcapi = WooCommerce.get_instance()
-        response = wcapi.get(f"products/{product_id}")
-        
-        if response.status_code == 200:
-            return cls.model_validate(response.json())
-        
-        raise Exception(response.json().get("message", "Unknown error"))
-
     def save(self):
         """
         Save the product to WooCommerce. Updates if it has an ID, otherwise creates a new one.
         """
-        wcapi = WooCommerce.get_instance()
-        data = self.model_dump()
-        response = wcapi.put(f"products/{self.id}", data) if self.id else wcapi.post("products", data)
+        # Save categories and tags first
+        for category in self.categories:
+            category.save()
+        for tag in self.tags:
+            tag.save()
         
-        if response.status_code in [200, 201]:
-            updated_product = self.model_validate(response.json())
-            for field, value in updated_product.model_dump().items():
-                setattr(self, field, value)
-            return self
-        
-        raise Exception(response.json().get("message", "Unknown error"))
+        # Then proceed with the product
+        return super().save()
 
-    def delete(self):
-        """
-        Delete the product from WooCommerce.
-        """
-        if not self.id:
-            raise Exception("Product has no ID. Cannot delete.")
-        
-        wcapi = WooCommerce.get_instance()
-        response = wcapi.delete(f"products/{self.id}")
-        return response.json()
+    @classmethod
+    def endpoint(cls) -> str:
+        return "products"
 
     def __repr__(self):
         return f"Product(id={self.id}, name={self.name}, sku={self.sku}, price={self.price}, stock={self.stock_quantity})"
