@@ -13,4 +13,5 @@ readme = "README.md"
 dependencies = [
   "WooCommerce",
   "pydantic",
+  "pydantic[email]"
 ]
