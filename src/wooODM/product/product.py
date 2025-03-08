@@ -134,6 +134,32 @@ class Product(WooBasicODM):
         
         # Then proceed with the product
         return super().save()
+    
+    @classmethod
+    def model_validate(cls, data: Dict[str, Any]) -> "Product":
+        """
+        Override the model_validate method to handle nested objects.
+        """
+        # Call the super method first
+        validated_object = super().model_validate(data)
+        
+        # Validate and parse nested objects
+        if "categories" in validated_object:
+            validated_object["categories"] = [CategoryProperties.model_validate(category) for category in validated_object["categories"]]
+        if "tags" in validated_object:
+            validated_object["tags"] = [TagProperties.model_validate(tag) for tag in validated_object["tags"]]
+        if "images" in validated_object:
+            validated_object["images"] = [ImageProperties.model_validate(image) for image in validated_object["images"]]
+        if "attributes" in validated_object:
+            validated_object["attributes"] = [AttributeProperties.model_validate(attribute) for attribute in validated_object["attributes"]]
+        if "default_attributes" in validated_object:
+            validated_object["default_attributes"] = [DefaultAttributeProperties.model_validate(default_attribute) for default_attribute in validated_object["default_attributes"]]
+        if "downloads" in validated_object:
+            validated_object["downloads"] = [DownloadProperties.model_validate(download) for download in validated_object["downloads"]]
+        if "meta_data" in validated_object:
+            validated_object["meta_data"] = [MetaDataProperties.model_validate(meta) for meta in validated_object["meta_data"]]
+        
+        return validated_object
 
     @classmethod
     def endpoint(cls, id: int = None) -> str:

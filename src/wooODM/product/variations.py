@@ -1,7 +1,6 @@
 from pydantic import BaseModel, Field
-from typing import Optional, List, Any
+from typing import Dict, Optional, List, Any
 from datetime import datetime
-from .image import Image
 from ..core import WooBasicODM
 
 class VariationDimensions(BaseModel):
@@ -18,6 +17,16 @@ class VariationAttribute(BaseModel):
     id: Optional[int] = None
     name: Optional[str] = None
     option: Optional[str] = None
+
+class VariationImage(BaseModel):
+    id: Optional[int] = None  # Image ID
+    date_created: Optional[datetime] = None  # The date the image was created, in the site's timezone (read-only)
+    date_created_gmt: Optional[datetime] = None  # The date the image was created, as GMT (read-only)
+    date_modified: Optional[datetime] = None  # The date the image was last modified, in the site's timezone (read-only)
+    date_modified_gmt: Optional[datetime] = None  # The date the image was last modified, as GMT (read-only)
+    src: Optional[str] = None  # Image URL
+    name: Optional[str] = None  # Image name
+    alt: Optional[str] = None  # Image alternative text
 
 class VariationMetaData(BaseModel):
     id: Optional[int] = None  # Unique identifier for the resource (read-only)
@@ -60,7 +69,7 @@ class ProductVariation(WooBasicODM):
     dimensions: Optional[VariationDimensions] = None  # Variation dimensions
     shipping_class: Optional[str] = None  # Shipping class slug
     shipping_class_id: Optional[int] = None  # Shipping class ID (read-only)
-    image: Optional[Image] = None  # Variation image data
+    image: Optional[VariationImage] = None  # Variation image data
     attributes: List[VariationAttribute] = Field(default=[])  # List of attributes
     menu_order: int = 0  # Menu order, used to custom sort products
     meta_data: List[VariationMetaData] = Field(default=[])  # Meta data
@@ -70,6 +79,28 @@ class ProductVariation(WooBasicODM):
         assert id is not None, "Variation ID is mandatory"
 
         return f"products/{id}/variations/"
+    
+    @classmethod
+    def model_validate(cls, data: Dict[str, Any]) -> "ProductVariation":
+        """
+        Override the model_validate method to handle nested objects.
+        """
+        # Call the super method first
+        validated_object = super().model_validate(data)
+        
+        # Validate and parse nested objects
+        if "downloads" in validated_object:
+            validated_object["downloads"] = [VariationDownload.model_validate(download) for download in validated_object["downloads"]]
+        if "dimensions" in validated_object:
+            validated_object["dimensions"] = VariationDimensions.model_validate(validated_object["dimensions"])
+        if "image" in validated_object:
+            validated_object["image"] = VariationImage.model_validate(validated_object["image"])
+        if "attributes" in validated_object:
+            validated_object["attributes"] = [VariationAttribute.model_validate(attribute) for attribute in validated_object["attributes"]]
+        if "meta_data" in validated_object:
+            validated_object["meta_data"] = [VariationMetaData.model_validate(meta) for meta in validated_object["meta_data"]]
+        
+        return validated_object
 
     def __repr__(self):
         return f"ProductVariation(id={self.id}, sku={self.sku}, price={self.price}, stock={self.stock_quantity})"
