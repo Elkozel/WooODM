@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 from typing import Dict, Optional, List, Any
 from datetime import datetime
-from ..core import WooBasicODM
+from ..core import WooDoubleIdODM
 
 class VariationDimensions(BaseModel):
     length: Optional[str] = None
@@ -33,7 +33,7 @@ class VariationMetaData(BaseModel):
     key: Optional[str] = None  # Meta key
     value: Optional[Any] = None  # Meta value
 
-class ProductVariation(WooBasicODM):
+class ProductVariation(WooDoubleIdODM):
     id: Optional[int] = None  # Unique identifier for the resource (read-only)
     date_created: Optional[datetime] = None  # The date the variation was created, in the site's timezone (read-only)
     date_created_gmt: Optional[datetime] = None  # The date the variation was created, as GMT (read-only)
@@ -74,11 +74,15 @@ class ProductVariation(WooBasicODM):
     menu_order: int = 0  # Menu order, used to custom sort products
     meta_data: List[VariationMetaData] = Field(default=[])  # Meta data
 
-    @classmethod
-    def endpoint(cls, id: int = None) -> str:
-        assert id is not None, "Variation ID is mandatory"
 
-        return f"products/{id}/variations/"
+    
+    @classmethod
+    def endpoint(cls, id1: int, id2: int = None) -> str:
+        """
+        Return the endpoint for the WooCommerce model.
+        """
+        assert id is not None, "Variation ID is mandatory"
+        return f"products/{id1}/variations/{id2}" if id2 else f"products/{id1}/variations/"
     
     @classmethod
     def model_validate(cls, data: Dict[str, Any]) -> "ProductVariation":
