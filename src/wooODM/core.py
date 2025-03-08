@@ -1,3 +1,5 @@
+from datetime import date, datetime
+from typing import Optional
 from pydantic import BaseModel
 from abc import ABC, abstractmethod
 from woocommerce import API  # Install using `pip install woocommerce`
@@ -81,6 +83,12 @@ class WooBasicODM(BaseModel, ABC):
         """
         wcapi = WooCommerce.get_instance()
         data = self.model_dump()
+
+        # Datetime objects need to be converted to ISO format before sending
+        for key, value in data.items():
+            if isinstance(value, (datetime, date)):
+                data[key] = value.isoformat()
+                
         response = wcapi.put(self.endpoint(self.id), data) if self.id else wcapi.post(self.endpoint(), data)
         
         if response.status_code in [200, 201]:
@@ -107,7 +115,9 @@ class WooDoubleIdODM(BaseModel, ABC):
     """
     Abstract base class for WooCommerce models.
     """
-    
+    # This is not optional, however it won't work with Pydantic if it's not set to None
+    id1: Optional[int] = None # First ID (often of the product or some other parent object)
+
     @classmethod
     @abstractmethod
     def endpoint(cls, id1: int, id2: int = None) -> str:
@@ -148,8 +158,16 @@ class WooDoubleIdODM(BaseModel, ABC):
         """
         Save the item to WooCommerce. Updates if it has an ID, otherwise creates a new one.
         """
+        assert self.id1 is not None, "ID1 is mandatory for this model."
+
         wcapi = WooCommerce.get_instance()
         data = self.model_dump()
+
+        # Datetime objects need to be converted to ISO format before sending
+        for key, value in data.items():
+            if isinstance(value, (datetime, date)):
+                data[key] = value.isoformat()
+
         response = wcapi.put(self.endpoint(self.id1, self.id), data) if self.id else wcapi.post(self.endpoint(self.id1), data)
         
         if response.status_code in [200, 201]:
