@@ -97,7 +97,7 @@ class WooBasicODM(BaseModel, ABC):
                 setattr(self, field, value)
             return self
         
-        raise Exception(response.json().get("message", "Unknown error"))
+        raise Exception(f"Error: {response.json().get("message", "Unknown error")} \d Details: {response.json().get("details", "")}")
 
     def delete(self):
         """
@@ -176,7 +176,7 @@ class WooDoubleIdODM(BaseModel, ABC):
                 setattr(self, field, value)
             return self
         
-        raise Exception(response.json().get("message", "Unknown error"))
+        raise Exception(f"Error: {response.json().get("message", "Unknown error")} \d Details: {response.json().get("details", "")}")
 
     def delete(self):
         """
