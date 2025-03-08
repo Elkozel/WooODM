@@ -121,19 +121,6 @@ class Product(WooBasicODM):
     grouped_products: List[int] = Field(default=[])  # List of grouped product IDs
     menu_order: int = 0  # Menu order for sorting products
     meta_data: List[MetaDataProperties] = Field(default=[])  # List of meta data
-
-    def save(self):
-        """
-        Save the product to WooCommerce. Updates if it has an ID, otherwise creates a new one.
-        """
-        # Save categories and tags first
-        for category in self.categories:
-            category.save()
-        for tag in self.tags:
-            tag.save()
-        
-        # Then proceed with the product
-        return super().save()
     
     @classmethod
     def model_validate(cls, data: Dict[str, Any]) -> "Product":
