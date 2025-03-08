@@ -66,9 +66,9 @@ class ProductVariation(WooBasicODM):
     meta_data: List[VariationMetaData] = Field(default=[])  # Meta data
 
     @classmethod
-    def endpoint(cls, id: int) -> str:
+    def endpoint(cls, id: int = None) -> str:
         assert id is not None, "Variation ID is mandatory"
-        
+
         return f"products/{id}/variations/"
 
     def __repr__(self):

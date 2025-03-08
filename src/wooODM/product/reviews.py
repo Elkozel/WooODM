@@ -19,7 +19,7 @@ class ProductReview(WooBasicODM):
     verified: bool  # Shows if the reviewer bought the product or not
 
     @classmethod
-    def endpoint(cls, id: int) -> str:
+    def endpoint(cls, id: int = None) -> str:
         return "products/reviews" if id is None else f"products/reviews/{id}"
 
     def __repr__(self):

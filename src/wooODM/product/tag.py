@@ -13,7 +13,7 @@ class ProductTag(WooBasicODM):
     count: Optional[int] = None  # Number of published products associated with the tag (read-only)
 
     @classmethod
-    def endpoint(cls, id: int) -> str:
+    def endpoint(cls, id: int = None) -> str:
         return "products/tags" if id is None else f"products/tags/{id}"
  
     def __repr__(self):

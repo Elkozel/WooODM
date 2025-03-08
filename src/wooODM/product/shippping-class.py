@@ -13,7 +13,7 @@ class ShippingClass(WooBasicODM):
     count: Optional[int] = None  # Number of published products for the resource (read-only)
 
     @classmethod
-    def endpoint(cls, id: int) -> str:
+    def endpoint(cls, id: int = None) -> str:
         return "products/shipping_classes" if id is None else f"products/shipping_classes/{id}"
 
     def __repr__(self):

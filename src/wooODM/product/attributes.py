@@ -14,7 +14,7 @@ class ProductAttribute(WooBasicODM):
     has_archives: bool = False  # Enable/Disable attribute archives. Default is False
 
     @classmethod
-    def endpoint(cls, id: int) -> str:
+    def endpoint(cls, id: int = None) -> str:
         return "products/attributes" if id is None else f"products/attributes/{id}"
 
     def __repr__(self):
