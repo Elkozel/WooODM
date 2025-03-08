@@ -91,8 +91,8 @@ class Product(WooBasicODM):
         return super().save()
 
     @classmethod
-    def endpoint(cls) -> str:
-        return "products"
+    def endpoint(cls, id: int) -> str:
+        return "products" if id is None else f"products/{id}"
 
     def __repr__(self):
         return f"Product(id={self.id}, name={self.name}, sku={self.sku}, price={self.price}, stock={self.stock_quantity})"

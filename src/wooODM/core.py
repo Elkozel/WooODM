@@ -43,7 +43,7 @@ class WooBasicODM(BaseModel):
     
     @classmethod
     @abstractmethod
-    def endpoint(cls) -> str:
+    def endpoint(cls, id: int) -> str:
         """
         Return the endpoint for the WooCommerce model.
         """
@@ -68,7 +68,7 @@ class WooBasicODM(BaseModel):
         Retrieve an item from WooCommerce by ID and return a model object.
         """
         wcapi = WooCommerce.get_instance()
-        response = wcapi.get(f"{cls.endpoint()}/{item_id}")
+        response = wcapi.get(cls.endpoint(item_id))
         
         if response.status_code == 200:
             return cls.model_validate(response.json())
@@ -81,7 +81,7 @@ class WooBasicODM(BaseModel):
         """
         wcapi = WooCommerce.get_instance()
         data = self.model_dump()
-        response = wcapi.put(f"{self.endpoint()}/{self.id}", data) if self.id else wcapi.post(self.endpoint(), data)
+        response = wcapi.put(self.endpoint(self.id), data) if self.id else wcapi.post(self.endpoint(), data)
         
         if response.status_code in [200, 201]:
             updated_item = self.model_validate(response.json())
@@ -99,5 +99,5 @@ class WooBasicODM(BaseModel):
             raise Exception("Item has no ID. Cannot delete.")
         
         wcapi = WooCommerce.get_instance()
-        response = wcapi.delete(f"{self.endpoint()}/{self.id}")
+        response = wcapi.delete(self.endpoint(self.id))
         return response.json()

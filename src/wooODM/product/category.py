@@ -18,8 +18,8 @@ class Category(WooBasicODM):
     count: Optional[int] = 0  # Number of published products in the category (read-only)
 
     @classmethod
-    def endpoint(cls) -> str:
-        return "products/categories"
+    def endpoint(cls, id: int) -> str:
+        return "products/categories" if id is None else f"products/categories/{id}"
     
     def __repr__(self):
         return f"Category(id={self.id}, name={self.name}, slug={self.slug}, product_count={self.count})"
