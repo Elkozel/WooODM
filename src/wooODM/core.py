@@ -43,7 +43,7 @@ class WooBasicODM(BaseModel):
     
     @classmethod
     @abstractmethod
-    def endpoint(cls, id: int) -> str:
+    def endpoint(cls, id: int = None) -> str:
         """
         Return the endpoint for the WooCommerce model.
         """
@@ -55,7 +55,7 @@ class WooBasicODM(BaseModel):
         Fetch all items with pagination and return a list of model objects.
         """
         wcapi = WooCommerce.get_instance()
-        response = wcapi.get(f"{cls.endpoint()}?per_page={per_page}&page={page}")
+        response = wcapi.get(f"{cls.endpoint()}", params={"per_page": per_page, "page": page})
 
         if response.status_code == 200:
             return [cls.model_validate(item) for item in response.json()]
@@ -99,5 +99,5 @@ class WooBasicODM(BaseModel):
             raise Exception("Item has no ID. Cannot delete.")
         
         wcapi = WooCommerce.get_instance()
-        response = wcapi.delete(self.endpoint(self.id))
-        return response.json()
+        response = wcapi.delete(self.endpoint(self.id), params={"force": True})
+        return self.model_validate(response.json())
