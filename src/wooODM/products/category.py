@@ -2,9 +2,7 @@ from pydantic import BaseModel, Field
 from typing import Optional, Dict, Any
 from datetime import datetime
 
-from wooODM.core import WooBasicODM, WooCommerce
-from pydantic import root_validator
-
+from wooODM.core import WooBasicODM
 class ImageProperties(BaseModel):
     """
     Represents the image properties for a WooCommerce product category.

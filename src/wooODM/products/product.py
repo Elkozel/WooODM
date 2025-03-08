@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 
-from wooODM.core import WooBasicODM, WooCommerce
+from wooODM.core import WooBasicODM
 
 class DownloadProperties(BaseModel):
     id: Optional[str] = None  # File ID

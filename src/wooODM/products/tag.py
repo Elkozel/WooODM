@@ -1,6 +1,5 @@
-from pydantic import BaseModel, Field
 from typing import Optional
-from wooODM.core import WooBasicODM, WooCommerce
+from wooODM.core import WooBasicODM
 
 class ProductTag(WooBasicODM):
     """
