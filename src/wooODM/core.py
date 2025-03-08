@@ -36,7 +36,7 @@ class WooCommerce:
             raise Exception("WooCommerce API not initialized. Call WooCommerce.init() first.")
         return cls._instance
     
-class WooBasicODM(BaseModel):
+class WooBasicODM(BaseModel, ABC):
     """
     Abstract base class for WooCommerce models.
     """
@@ -100,4 +100,73 @@ class WooBasicODM(BaseModel):
         
         wcapi = WooCommerce.get_instance()
         response = wcapi.delete(self.endpoint(self.id), params={"force": True})
+        return self.model_validate(response.json())
+    
+
+class WooDoubleIdODM(BaseModel, ABC):
+    """
+    Abstract base class for WooCommerce models.
+    """
+    
+    @classmethod
+    @abstractmethod
+    def endpoint(cls, id1: int, id2: int = None) -> str:
+        """
+        Return the endpoint for the WooCommerce model.
+        """
+        pass
+
+    @classmethod
+    def all(cls, id1: int, per_page: int = 10, page: int = 1):
+        """
+        Fetch all items with pagination and return a list of model objects.
+        """
+        wcapi = WooCommerce.get_instance()
+        response = wcapi.get(f"{cls.endpoint(id1)}", params={"per_page": per_page, "page": page})
+
+        if response.status_code == 200:
+            return [cls.model_validate(item) for item in response.json()]
+        
+        raise Exception(response.json().get("message", "Unknown error"))
+    
+    @classmethod
+    def get(cls, id1: int, id2: int):
+        """
+        Retrieve an item from WooCommerce by ID and return a model object.
+        """
+        wcapi = WooCommerce.get_instance()
+        response = wcapi.get(cls.endpoint(id1, id2))
+        
+        if response.status_code == 200:
+            response_obj = cls.model_validate(response.json())
+            response_obj.id1 = id1
+            return response_obj
+        
+        raise Exception(response.json().get("message", "Unknown error"))
+
+    def save(self):
+        """
+        Save the item to WooCommerce. Updates if it has an ID, otherwise creates a new one.
+        """
+        wcapi = WooCommerce.get_instance()
+        data = self.model_dump()
+        response = wcapi.put(self.endpoint(self.id1, self.id), data) if self.id else wcapi.post(self.endpoint(self.id1), data)
+        
+        if response.status_code in [200, 201]:
+            updated_item = self.model_validate(response.json())
+            for field, value in updated_item.model_dump().items():
+                setattr(self, field, value)
+            return self
+        
+        raise Exception(response.json().get("message", "Unknown error"))
+
+    def delete(self):
+        """
+        Delete the item from WooCommerce.
+        """
+        if not self.id:
+            raise Exception("Item has no ID. Cannot delete.")
+        
+        wcapi = WooCommerce.get_instance()
+        response = wcapi.delete(self.endpoint(self.id1, self.id), params={"force": True})
         return self.model_validate(response.json())
