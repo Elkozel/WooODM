@@ -27,6 +27,7 @@ To install WooODM locally as a package, follow these steps:
         ```sh
         pip install -e .
         ```
+
 ## Usage
 
 To start using WooODM, follow these steps:
@@ -52,6 +53,10 @@ To start using WooODM, follow these steps:
     new_product = Product(name="New Product", regular_price="19.99")
     new_product.save()
     ```
+
+## Examples
+
+You can find example scripts in the `examples` folder to help you get started with using WooODM.
 
 ## Contributing
 For guidelines on how to contribute to WooODM, please refer to the [CONTRIBUTING.md](CONTRIBUTING.md) file.
