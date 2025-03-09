@@ -76,6 +76,17 @@ class WooBasicODM(BaseModel, ABC):
             return cls.model_validate(response.json())
         
         raise Exception(response.json().get("message", "Unknown error"))
+    
+    def _remove_datetimes(self, data):
+        """
+        Replace date or datetime objects with their ISO formatted strings, since the datetime cannot be serialized.
+        """
+        for key, value in data.items():
+            if isinstance(value, (datetime, date)):
+                data[key] = value.isoformat()
+            if isinstance(value, dict):
+                data[key] = self._remove_datetimes(value)
+        return data
 
     def save(self):
         """
@@ -85,9 +96,7 @@ class WooBasicODM(BaseModel, ABC):
         data = self.model_dump()
 
         # Datetime objects need to be converted to ISO format before sending
-        for key, value in data.items():
-            if isinstance(value, (datetime, date)):
-                data[key] = value.isoformat()
+        data = self._remove_datetimes(data)
                 
         response = wcapi.put(self.endpoint(self.id), data) if self.id else wcapi.post(self.endpoint(), data)
         
@@ -165,9 +174,7 @@ class WooDoubleIdODM(BaseModel, ABC):
         data = self.model_dump()
 
         # Datetime objects need to be converted to ISO format before sending
-        for key, value in data.items():
-            if isinstance(value, (datetime, date)):
-                data[key] = value.isoformat()
+        data = self._remove_datetimes(data)
 
         response = wcapi.put(self.endpoint(self.id1, self.id), data) if self.id else wcapi.post(self.endpoint(self.id1), data)
         
