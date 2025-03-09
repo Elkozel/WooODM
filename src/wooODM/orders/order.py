@@ -145,36 +145,6 @@ class Order(WooBasicODM):
         
         # Then proceed with the product
         return super().save()
-    
-    @classmethod
-    def model_validate(cls, data: Dict[str, Any]) -> "Order":
-        """
-        Override the model_validate method to handle nested objects.
-        """
-        # Call the super method first
-        validated_object = super().model_validate(data)
-        
-        # Validate and parse nested objects
-        if "billing" in validated_object:
-            validated_object["billing"] = [BillingProperties.model_validate(category) for category in validated_object["billing"]]
-        if "shipping" in validated_object:
-            validated_object["shipping"] = [ShippingProperties.model_validate(tag) for tag in validated_object["shipping"]]
-        if "meta_data" in validated_object:
-            validated_object["meta_data"] = [MetaDataProperties.model_validate(image) for image in validated_object["meta_data"]]
-        if "line_items" in validated_object:
-            validated_object["line_items"] = [LineItemProperties.model_validate(attribute) for attribute in validated_object["line_items"]]
-        if "tax_lines" in validated_object:
-            validated_object["tax_lines"] = [TaxLineProperties.model_validate(default_attribute) for default_attribute in validated_object["tax_lines"]]
-        if "shipping_lines" in validated_object:
-            validated_object["shipping_lines"] = [ShippingLineProperties.model_validate(download) for download in validated_object["shipping_lines"]]
-        if "fee_lines" in validated_object:
-            validated_object["fee_lines"] = [FeeLineProperties.model_validate(meta) for meta in validated_object["fee_lines"]]
-        if "coupon_lines" in validated_object:
-            validated_object["coupon_lines"] = [CouponLineProperties.model_validate(meta) for meta in validated_object["coupon_lines"]]
-        if "refunds" in validated_object:
-            validated_object["refunds"] = [RefundProperties.model_validate(meta) for meta in validated_object["refunds"]]
-
-        return validated_object
 
     @classmethod
     def endpoint(cls, id: int = None) -> str:

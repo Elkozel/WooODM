@@ -83,28 +83,6 @@ class ProductVariation(WooDoubleIdODM):
         """
         assert id is not None, "Variation ID is mandatory"
         return f"products/{id1}/variations/{id2}" if id2 else f"products/{id1}/variations/"
-    
-    @classmethod
-    def model_validate(cls, data: Dict[str, Any]) -> "ProductVariation":
-        """
-        Override the model_validate method to handle nested objects.
-        """
-        # Call the super method first
-        validated_object = super().model_validate(data)
-        
-        # Validate and parse nested objects
-        if "downloads" in validated_object:
-            validated_object["downloads"] = [VariationDownload.model_validate(download) for download in validated_object["downloads"]]
-        if "dimensions" in validated_object:
-            validated_object["dimensions"] = VariationDimensions.model_validate(validated_object["dimensions"])
-        if "image" in validated_object:
-            validated_object["image"] = VariationImage.model_validate(validated_object["image"])
-        if "attributes" in validated_object:
-            validated_object["attributes"] = [VariationAttribute.model_validate(attribute) for attribute in validated_object["attributes"]]
-        if "meta_data" in validated_object:
-            validated_object["meta_data"] = [VariationMetaData.model_validate(meta) for meta in validated_object["meta_data"]]
-        
-        return validated_object
 
     def __repr__(self):
         return f"ProductVariation(id={self.id}, sku={self.sku}, price={self.price}, stock={self.stock_quantity})"

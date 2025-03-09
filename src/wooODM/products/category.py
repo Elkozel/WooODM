@@ -33,19 +33,6 @@ class Category(WooBasicODM):
     @classmethod
     def endpoint(cls, id: int = None) -> str:
         return "products/categories" if id is None else f"products/categories/{id}"
-
-    def model_validate(cls, data: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Override the model_validate method to handle nested objects.
-        """
-        # Call the super method first
-        validated_object = super().model_validate(data)
-
-        # Validate and parse nested objects
-        if "image" in validated_object:
-            validated_object["image"] = [ImageProperties.model_validate(image) for image in validated_object["image"]]
-            
-        return data
     
     def __repr__(self):
         return f"Category(id={self.id}, name={self.name}, slug={self.slug}, product_count={self.count})"
