@@ -92,12 +92,13 @@ class WooBasicODM(BaseModel, ABC):
         response = wcapi.put(self.endpoint(self.id), data) if self.id else wcapi.post(self.endpoint(), data)
         
         if response.status_code in [200, 201]:
-            updated_item = self.model_validate(response.json())
-            for field, value in updated_item.model_dump().items():
-                setattr(self, field, value)
+            response = self.model_validate(response.json())
+            self.__dict__.update(response.__dict__)
             return self
-        
-        raise Exception(f"Error: {response.json().get("message", "Unknown error")} \d Details: {response.json().get("details", "")}")
+        response = response.json()
+        errorMsg = response.get("message", "Unknown error")
+        errorDetails = response.get("data", {}).get("details", "")
+        raise Exception(f"Error: {errorMsg} \n Details: {errorDetails}")
 
     def delete(self):
         """
@@ -171,12 +172,13 @@ class WooDoubleIdODM(BaseModel, ABC):
         response = wcapi.put(self.endpoint(self.id1, self.id), data) if self.id else wcapi.post(self.endpoint(self.id1), data)
         
         if response.status_code in [200, 201]:
-            updated_item = self.model_validate(response.json())
-            for field, value in updated_item.model_dump().items():
-                setattr(self, field, value)
+            response = self.model_validate(response.json())
+            self.__dict__.update(response.__dict__)
             return self
         
-        raise Exception(f"Error: {response.json().get("message", "Unknown error")} \d Details: {response.json().get("details", "")}")
+        errorMsg = response.json().get("message", "Unknown error")
+        errorDetails = response.json().get("details", "")
+        raise Exception(f"Error: {errorMsg} \n Details: {errorDetails}")
 
     def delete(self):
         """
